@@ -1,3 +1,4 @@
+import re
 import tkinter as tk
 from tkinter import filedialog
 import pdfplumber
@@ -12,9 +13,10 @@ def selecionar_arquivo():
     )
     return caminho_arquivo
 
-def limpar_texto(texto):
-    """Remove espaços extras e quebra de linhas indesejadas."""
-    return ' '.join(texto.split())
+def extrair_por_regex(texto, padrao, default="Não encontrado"):
+    """Extrai um valor do texto com base em um padrão regex."""
+    match = re.search(padrao, texto)
+    return match.group(1).strip() if match else default
 
 def extrair_dados_pdf(caminho_pdf):
     """Extrai dados relevantes do PDF baseado no layout fornecido."""
@@ -23,53 +25,33 @@ def extrair_dados_pdf(caminho_pdf):
         for pagina in pdf.pages:
             texto_completo += pagina.extract_text() + "\n"
     
-    # Limpando texto para facilitar o parsing
-    texto_completo = limpar_texto(texto_completo)
+    # Exibe o texto completo para análise
+    print("Texto extraído completo:")
+    print(texto_completo[:2000])  # Limita a impressão para os primeiros 2000 caracteres
 
-    # Parsing baseado nos padrões do PDF enviado
-    numero_nota = "Não encontrado"
-    prestador = "Não encontrado"
-    tomador = "Não encontrado"
-    cnpj = "Não encontrado"
-    valor_servico = "Não encontrado"
-    valor_deducao = "Não encontrado"
-    valor_iss = "Não encontrado"
+    # Limpando texto para evitar problemas com quebras
+    texto_completo = ' '.join(texto_completo.split())
 
-    # Localizando informações no texto
-    if "NFS-e Nº" in texto_completo:
-        numero_nota = texto_completo.split("NFS-e Nº")[1].split(" ")[0].strip()
-    if "LUX CONTABILIDADE E AUDITORIA" in texto_completo:
-        prestador = "LUX CONTABILIDADE E AUDITORIA"
-    if "TOMADOR DO SERVIÇO" in texto_completo:
-        try:
-            tomador_inicio = texto_completo.index("TOMADOR DO SERVIÇO") + len("TOMADOR DO SERVIÇO")
-            tomador_info = texto_completo[tomador_inicio:].split("CPF/CNPJ")[0].strip()
-            cnpj = texto_completo.split("CPF/CNPJ")[1].split(" ")[0].strip()
-            tomador = tomador_info
-        except IndexError:
-            tomador = "Não encontrado"
-            cnpj = "Não encontrado"
-    if "Valor Serviço" in texto_completo:
-        try:
-            valor_servico = texto_completo.split("Valor Serviço")[1].split(" ")[0].strip()
-        except IndexError:
-            valor_servico = "Não encontrado"
-    if "Valor Dedução" in texto_completo:
-        try:
-            valor_deducao = texto_completo.split("Valor Dedução")[1].split(" ")[0].strip()
-        except IndexError:
-            valor_deducao = "Não encontrado"
-    if "Valor ISS" in texto_completo:
-        try:
-            valor_iss = texto_completo.split("Valor ISS")[1].split(" ")[0].strip()
-        except IndexError:
-            valor_iss = "Não encontrado"
+    # Extração com regex para Número da Nota
+    numero_nota = extrair_por_regex(texto_completo, r"NFS-e Nº (\d+)")
+
+    # Extrair nome do prestador
+    prestador = "LUX CONTABILIDADE E AUDITORIA"
+    
+    # Ajuste para pegar o Tomador e CNPJ mais robusto
+    tomador = extrair_por_regex(texto_completo, r"TOMADOR DO SERVIÇO.*?Nome/Razão Social\s*(.*?)\s*CPF/CNPJ")
+    cnpj_tomador = extrair_por_regex(texto_completo, r"CPF/CNPJ\s*(\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2})")
+
+    # Ajustes nas expressões para capturar valores monetários corretamente
+    valor_servico = extrair_por_regex(texto_completo, r"Valor Serviço\s*([\d\.,]+)")
+    valor_deducao = extrair_por_regex(texto_completo, r"Valor Dedução\s*([\d\.,]+)")
+    valor_iss = extrair_por_regex(texto_completo, r"Valor ISS\s*([\d\.,]+)")
 
     return {
         "Numero Nota": numero_nota,
         "Prestador": prestador,
         "Tomador": tomador,
-        "CNPJ": cnpj,
+        "CNPJ Tomador": cnpj_tomador,
         "Valor Serviço": valor_servico,
         "Valor Dedução": valor_deducao,
         "Valor ISS": valor_iss,
