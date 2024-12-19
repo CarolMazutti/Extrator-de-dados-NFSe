@@ -40,7 +40,7 @@ def extrair_dados_nf(texto_pdf, especie):
 # Função para salvar arquivos em CSV ou ODS
 def salvar_arquivo(dados, formato, root):
     # Reorganiza as colunas conforme ordem exigida
-    colunas_ordem = ["CNPJ", "Número Nota", "Espécie", "Serie", "Data Emissão", "Valor Total", "Modelo"]
+    colunas_ordem = ["CNPJ", "Número Nota", "Espécie", "Serie", "Data Emissão", "Valor Total", "Modelo", "Código do Serviço", "Descrição do Serviço"]
     df = pd.DataFrame(dados, columns=colunas_ordem)
 
     # Seleção do local de salvamento
