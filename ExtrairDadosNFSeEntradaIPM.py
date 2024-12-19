@@ -1,4 +1,4 @@
-#Extraí dados de NF padrão IPM
+#Extrai dados de NF padrão IPM
 
 import os
 import PyPDF2
