@@ -15,8 +15,6 @@ def extrair_texto_pdf(caminho_pdf):
             texto += pagina.extract_text()
     return texto
 
-########################
-
 # Função para extrair os dados do texto do PDF
 def extrair_dados_nf(texto_pdf, especie):
     # Expressões regulares ajustadas para capturar corretamente os campos
@@ -39,10 +37,6 @@ def extrair_dados_nf(texto_pdf, especie):
                 descricao_servico = linhas[i + 1].strip()  # Captura a linha seguinte
             break
 
-    # Código do serviço
-    codigo_servico_match = re.search(r"Serviço\s+(\d{4})", texto_pdf)
-    codigo_servico = codigo_servico_match.group(1) if codigo_servico_match else "Não encontrado"
-
     # Organiza os dados extraídos
     dados = {
         "CNPJ": cnpj_match.group(1) if cnpj_match else "Não encontrado",
@@ -53,8 +47,7 @@ def extrair_dados_nf(texto_pdf, especie):
         "Data Emissão": data_emissao,
         "Valor Total": valor_total_match.group(1) if valor_total_match else "Não encontrado",
         "Modelo": "99" if especie == "NFSE" else "98",
-        "Código Serviço": codigo_servico,
-        "Descrição": descricao_servico,
+        "Código e Descrição": descricao_servico,
     }
     return dados
 
@@ -70,8 +63,7 @@ def salvar_arquivo(dados, formato, root):
         "Data Emissão",
         "Valor Total",
         "Modelo",
-        "Código Serviço",
-        "Descrição",
+        "Código e Descrição",
     ]
     df = pd.DataFrame(dados, columns=colunas_ordem)
 
