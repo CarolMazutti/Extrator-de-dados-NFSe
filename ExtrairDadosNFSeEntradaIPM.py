@@ -16,7 +16,7 @@ def extrair_texto_pdf(caminho_pdf):
     return texto
 
 # Função para extrair os dados do texto do PDF
-def extrair_dados_nf(texto_pdf, especie):
+def extrair_dados_nf(texto_pdf, especie, nome_arquivo):
     # Expressões regulares ajustadas para capturar corretamente os campos
     cnpj_match = re.search(r"CPF/CNPJ\s+([\d./-]+)", texto_pdf)
     numero_nota_match = re.search(r"Número da NFS-e\s+(\d+)", texto_pdf)
@@ -49,7 +49,12 @@ def extrair_dados_nf(texto_pdf, especie):
         "Modelo": "99" if especie == "NFSE" else "98",
         "Código e Descrição": descricao_servico,
     }
+
+    # Adiciona o nome do arquivo na coluna "Arquivo com Erro" se houver informações ausentes
+    dados["Arquivo com Erro"] = nome_arquivo if any(value == "Não encontrado" for value in dados.values()) else ""
+
     return dados
+
 
 # Função para salvar arquivos em CSV ou ODS
 def salvar_arquivo(dados, formato, root):
@@ -64,6 +69,7 @@ def salvar_arquivo(dados, formato, root):
         "Valor Total",
         "Modelo",
         "Código e Descrição",
+        "Arquivo com Erro",  # Nova coluna para indicar arquivos com erro
     ]
     df = pd.DataFrame(dados, columns=colunas_ordem)
 
@@ -90,7 +96,7 @@ def processar_notas(especie, root):
     # Selecionar a pasta com os PDFs
     pasta_origem = filedialog.askdirectory(title="Selecione a pasta com os arquivos PDF")
     if not pasta_origem:
-        messagebox.showwarning("Aviso", "Nenhuma pasta selecionada. Processo cancelado.")
+        messagebox.showwarning("Aviso," "Nenhuma pasta selecionada. Processo cancelado.")
         root.destroy()
         return
 
@@ -100,7 +106,7 @@ def processar_notas(especie, root):
         if arquivo.endswith(".pdf"):
             caminho_pdf = os.path.join(pasta_origem, arquivo)
             texto_extraido = extrair_texto_pdf(caminho_pdf)
-            dados_extraidos = extrair_dados_nf(texto_extraido, especie)
+            dados_extraidos = extrair_dados_nf(texto_extraido, especie, arquivo)
             dados_totais.append(dados_extraidos)
 
     # Tela para escolher o formato de salvamento
