@@ -15,6 +15,8 @@ def extrair_texto_pdf(caminho_pdf):
             texto += pagina.extract_text()
     return texto
 
+########################
+
 # Função para extrair os dados do texto do PDF
 def extrair_dados_nf(texto_pdf, especie):
     # Expressões regulares ajustadas para capturar corretamente os campos
@@ -28,26 +30,14 @@ def extrair_dados_nf(texto_pdf, especie):
     
     valor_total_match = re.search(r"Valor Serviço\s+([\d.,]+)", texto_pdf)
     
-    # Captura o campo "Descrição dos subitens"
-    descricao_servico_match = re.search(
-        r"Descrição dos subitens da Lista de Serviço em acordo com a Lei Complementar 116/03.*?:\s*(.*)",
-        texto_pdf,
-        re.IGNORECASE
-    )
-
-    # Caso o campo seja encontrado, tenta capturar a linha seguinte
-    if descricao_servico_match:
-        linhas = texto_pdf.splitlines()  # Divide o texto em linhas
-        indice = next(
-            (i for i, linha in enumerate(linhas) if "Descrição dos subitens" in linha),
-            None
-        )
-        if indice is not None and indice + 1 < len(linhas):
-            descricao_servico = linhas[indice + 1].strip()  # Captura a linha seguinte
-        else:
-            descricao_servico = "Não encontrado"
-    else:
-        descricao_servico = "Não encontrado"
+    # Captura a descrição do serviço
+    descricao_servico = "Não encontrado"
+    linhas = texto_pdf.splitlines()  # Divide o texto em linhas
+    for i, linha in enumerate(linhas):
+        if "Descrição dos subitens da Lista de Serviço em acordo com a Lei Complementar 116/03" in linha:
+            if i + 1 < len(linhas):  # Verifica se há uma linha seguinte
+                descricao_servico = linhas[i + 1].strip()  # Captura a linha seguinte
+            break
 
     # Código do serviço
     codigo_servico_match = re.search(r"Serviço\s+(\d{4})", texto_pdf)
