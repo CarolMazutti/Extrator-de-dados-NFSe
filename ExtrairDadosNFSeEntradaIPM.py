@@ -39,7 +39,7 @@ def extrair_dados_nf(texto_pdf, especie, nome_arquivo):
 
     # Organiza os dados extraídos
     dados = {
-        "CNPJ": cnpj_match.group(1) if cnpj_match else "Não encontrado",
+        "CNPJ": re.sub(r'\D', '', cnpj_match.group(1)) if cnpj_match else "Não encontrado",  # Limpa o CNPJ
         "Número Nota": numero_nota_match.group(1) if numero_nota_match else "Não encontrado",
         "Espécie": especie,
         "Serie": "1" if especie == "NFSE" else "U",
@@ -82,7 +82,7 @@ def salvar_arquivo(dados, formato, root):
     # Salva o arquivo no formato desejado
     caminho_arquivo = os.path.join(pasta_destino, f"notas.{formato.lower()}")
     if formato == 'CSV':
-        df.to_csv(caminho_arquivo, index=False)
+        df.to_csv(caminho_arquivo, index=False, sep=';')
     elif formato == 'ODS':
         df.to_excel(caminho_arquivo, index=False, engine='odf')
 
