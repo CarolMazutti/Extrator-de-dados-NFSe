@@ -69,7 +69,8 @@ def salvar_arquivo(dados, formato, root):
         "Valor Total",
         "Modelo",
         "Código e Descrição",
-        "Arquivo com Erro",  # Nova coluna para indicar arquivos com erro
+        "Arquivo com Erro",
+        "CFOP",
     ]
     df = pd.DataFrame(dados, columns=colunas_ordem)
 
