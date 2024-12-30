@@ -17,18 +17,15 @@ def extrair_texto_pdf(caminho_pdf):
 
 # Função para extrair os dados do texto do PDF
 def extrair_dados_nf(texto_pdf, especie, nome_arquivo):
-    # Expressões regulares ajustadas para capturar corretamente os campos
     cnpj_match = re.search(r"CPF/CNPJ\s+([\d./-]+)", texto_pdf)
     numero_nota_match = re.search(r"Número da NFS-e\s+(\d+)", texto_pdf)
     
-    # Corrigindo a extração das datas
     datas_match = re.findall(r"\d{2}/\d{2}/\d{4}", texto_pdf)
     data_fato_gerador = datas_match[0] if len(datas_match) > 0 else "Não encontrado"
     data_emissao = datas_match[1] if len(datas_match) > 1 else "Não encontrado"
     
     valor_total_match = re.search(r"Valor Serviço\s+([\d.,]+)", texto_pdf)
     
-    # Captura a descrição do serviço
     descricao_servico = "Não encontrado"
     linhas = texto_pdf.splitlines()  # Divide o texto em linhas
     for i, linha in enumerate(linhas):
