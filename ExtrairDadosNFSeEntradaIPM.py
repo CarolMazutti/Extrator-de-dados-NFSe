@@ -17,7 +17,9 @@ def extrair_texto_pdf(caminho_pdf):
 
 # Função para extrair os dados do texto do PDF
 def extrair_dados_nf(texto_pdf, especie, nome_arquivo):
-    cnpj_match = re.search(r"CPF/CNPJ\s+([\d./-]+)", texto_pdf)
+    cnpj_prestador_match = re.search(r"CNPJ:\s*([\d./-]+)", texto_pdf)
+    cnpj_prestador = re.sub(r'\D', '', cnpj_prestador_match.group(1)) if cnpj_prestador_match else "Não encontrado"
+
     numero_nota_match = re.search(r"Número da NFS-e\s+(\d+)", texto_pdf)
     
     datas_match = re.findall(r"\d{2}/\d{2}/\d{4}", texto_pdf)
@@ -36,7 +38,7 @@ def extrair_dados_nf(texto_pdf, especie, nome_arquivo):
 
     # Organiza os dados extraídos
     dados = {
-        "CNPJ": re.sub(r'\D', '', cnpj_match.group(1)) if cnpj_match else "Não encontrado",  # Limpa o CNPJ
+        "CNPJ": cnpj_prestador,
         "Número Nota": numero_nota_match.group(1) if numero_nota_match else "Não encontrado",
         "Espécie": especie,
         "Serie": "1" if especie == "NFSE" else "U",
@@ -51,7 +53,6 @@ def extrair_dados_nf(texto_pdf, especie, nome_arquivo):
     dados["Arquivo com Erro"] = nome_arquivo if any(value == "Não encontrado" for value in dados.values()) else ""
 
     return dados
-
 
 # Função para salvar arquivos em CSV ou ODS
 def salvar_arquivo(dados, formato, root):
