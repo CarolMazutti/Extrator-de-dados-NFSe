@@ -26,7 +26,21 @@ def extrair_dados_nf(texto_pdf, especie, nome_arquivo):
     data_fato_gerador = datas_match[0] if len(datas_match) > 0 else "Não encontrado"
     data_emissao = datas_match[1] if len(datas_match) > 1 else "Não encontrado"
     
+    if len(datas_match) < 1:
+        data_fato_gerador = "Não encontrado"
+    if len(datas_match) < 2:
+        data_emissao = "Não encontrado"
+    
     valor_total_match = re.search(r"Valor Serviço\s+([\d.,]+)", texto_pdf)
+    base_calculo_match = re.search(r"Base de Cálculo\s+([\d.,]+)", texto_pdf)
+    issqn_match = re.search(r"ISSQN\s+([\d.,]+)", texto_pdf)
+    issrf_match = re.search(r"ISSRF\s+([\d.,]+)", texto_pdf)
+    ir_match = re.search(r"IR\s+([\d.,]+)", texto_pdf)
+    inss_match = re.search(r"INSS\s+([\d.,]+)", texto_pdf)
+    csll_match = re.search(r"CSLL\s+([\d.,]+)", texto_pdf)
+    cofins_match = re.search(r"COFINS\s+([\d.,]+)", texto_pdf)
+    pis_match = re.search(r"PIS\s+([\d.,]+)", texto_pdf)
+    outras_retencoes_match = re.search(r"Outras Retenções\s+([\d.,]+)", texto_pdf)
     
     descricao_servico = "Não encontrado"
     linhas = texto_pdf.splitlines()  # Divide o texto em linhas
@@ -35,6 +49,9 @@ def extrair_dados_nf(texto_pdf, especie, nome_arquivo):
             if i + 1 < len(linhas):  # Verifica se há uma linha seguinte
                 descricao_servico = linhas[i + 1].strip()  # Captura a linha seguinte
             break
+
+    if descricao_servico == "Legenda do Local de Prestação do Serviço":
+        descricao_servico = "Não encontrado"
 
     # Organiza os dados extraídos
     dados = {
@@ -45,6 +62,15 @@ def extrair_dados_nf(texto_pdf, especie, nome_arquivo):
         "Data Fato Gerador": data_fato_gerador,
         "Data Emissão": data_emissao,
         "Valor Total": valor_total_match.group(1) if valor_total_match else "Não encontrado",
+        "Base de Cálculo": base_calculo_match.group(1) if base_calculo_match else "Não encontrado",
+        "ISSQN": issqn_match.group(1) if issqn_match else "Não encontrado",
+        "ISSRF": issrf_match.group(1) if issrf_match else "Não encontrado",
+        "IR": ir_match.group(1) if ir_match else "Não encontrado",
+        "INSS": inss_match.group(1) if inss_match else "Não encontrado",
+        "CSLL": csll_match.group(1) if csll_match else "Não encontrado",
+        "COFINS": cofins_match.group(1) if cofins_match else "Não encontrado",
+        "PIS": pis_match.group(1) if pis_match else "Não encontrado",
+        "Outras Retenções": outras_retencoes_match.group(1) if outras_retencoes_match else "Não encontrado",
         "Modelo": "99" if especie == "NFSE" else "98",
         "Código e Descrição": descricao_servico,
     }
@@ -58,13 +84,22 @@ def extrair_dados_nf(texto_pdf, especie, nome_arquivo):
 def salvar_arquivo(dados, formato, root):
     # Reorganiza as colunas conforme ordem exigida
     colunas_ordem = [
-        "CNPJ",
+	    "CNPJ",
         "Número Nota",
         "Espécie",
         "Serie",
         "Data Fato Gerador",
         "Data Emissão",
         "Valor Total",
+        "Base de Cálculo",
+        "ISSQN",
+        "ISSRF",
+        "IR",
+        "INSS",
+        "CSLL",
+        "COFINS",
+        "PIS",
+        "Outras Retenções",
         "Modelo",
         "Código e Descrição",
         "Arquivo com Erro",
