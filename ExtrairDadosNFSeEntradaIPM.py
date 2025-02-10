@@ -24,20 +24,26 @@ def extrair_texto_pdf(caminho_pdf):
 
 # Função para extrair os dados do texto do PDF
 def extrair_dados_nf(texto_pdf, especie, nome_arquivo):
+    # Normaliza espaços extras e mantém as quebras de linha
+    texto_pdf = re.sub(r"\s+\n", "\n", texto_pdf)  # Remove espaços extras antes das quebras de linha
+    
+    # Divide o texto em linhas
+    linhas = texto_pdf.split("\n")
+    
+    # Inicializa variáveis
+    data_fato_gerador = "Não encontrado"
+    data_emissao = "Não encontrado"
+    
+    # Percorre as linhas para capturar os valores que estão na linha seguinte aos rótulos
+    for i, linha in enumerate(linhas):
+        if "Data Fato Gerador" in linha and i + 1 < len(linhas):
+            data_fato_gerador = linhas[i + 1].strip()
+        elif "Data/Hora Emissão" in linha and i + 1 < len(linhas):
+            data_emissao = linhas[i + 1].strip()
+
     cnpj_prestador_match = re.search(r"CNPJ:\s*([\d./-]+)", texto_pdf)
     cnpj_prestador = re.sub(r'\D', '', cnpj_prestador_match.group(1)) if cnpj_prestador_match else "Não encontrado"
-
     numero_nota_match = re.search(r"Número da NFS-e\s+(\d+)", texto_pdf)
-    
-    datas_match = re.findall(r"\d{2}/\d{2}/\d{4}", texto_pdf)
-    data_fato_gerador = datas_match[0] if len(datas_match) > 0 else "Não encontrado"
-    data_emissao = datas_match[1] if len(datas_match) > 1 else "Não encontrado"
-    
-    if len(datas_match) < 1:
-        data_fato_gerador = "Não encontrado"
-    if len(datas_match) < 2:
-        data_emissao = "Não encontrado"
-    
     valor_total_match = re.search(r"Valor Serviço\s+([\d.,]+)", texto_pdf)
     base_calculo_match = re.search(r"Base de Cálculo\s+([\d.,]+)", texto_pdf)
     issqn_match = re.search(r"ISSQN\s+([\d.,]+)", texto_pdf)
