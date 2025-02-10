@@ -37,9 +37,27 @@ def extrair_dados_nf(texto_pdf, especie, nome_arquivo):
     # Percorre as linhas para capturar os valores que estão na linha seguinte aos rótulos
     for i, linha in enumerate(linhas):
         if "Data Fato Gerador" in linha and i + 1 < len(linhas):
-            data_fato_gerador = linhas[i + 1].strip()
+            datas_extracao = linhas[i + 1].strip().split()
+            
+            # Se encontrar duas datas
+            if len(datas_extracao) >= 2:
+                # A primeira data é a "Data Fato Gerador"
+                data_fato_gerador = datas_extracao[0]
+                
+                # A segunda data pode ter hora. Se tiver, removemos a hora e atribuimos à "Data Emissão"
+                data_emissao = datas_extracao[1].split()[0]  # Retira a hora, se existir
+                
+            # Se encontrar apenas uma data, define como "Não encontrado" para ambas as datas
+            elif len(datas_extracao) == 1:
+                data_fato_gerador = "Não encontrado"
+                data_emissao = "Não encontrado"
+            
         elif "Data/Hora Emissão" in linha and i + 1 < len(linhas):
-            data_emissao = linhas[i + 1].strip()
+            datas_extracao = linhas[i + 1].strip().split()
+            
+            # Se houver mais de uma data, atribui à "Data Emissão", removendo a hora, se necessário
+            if len(datas_extracao) > 1:
+                data_emissao = datas_extracao[1].split()[0]  # Remove a hora e pega a data
 
     cnpj_prestador_match = re.search(r"CNPJ:\s*([\d./-]+)", texto_pdf)
     cnpj_prestador = re.sub(r'\D', '', cnpj_prestador_match.group(1)) if cnpj_prestador_match else "Não encontrado"
