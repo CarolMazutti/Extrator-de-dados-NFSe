@@ -13,6 +13,13 @@ def extrair_texto_pdf(caminho_pdf):
         leitor = PyPDF2.PdfReader(arquivo)
         for pagina in leitor.pages:
             texto += pagina.extract_text()
+    #######################################
+    # linhas = texto.splitlines()  # Divide o texto em linhas
+
+    # print("\n=== TEXTO EXTRAÍDO COM NUMERAÇÃO ===\n")
+    # for i, linha in enumerate(linhas, start=1):  # Enumera as linhas a partir de 1
+    #     print(f"Linha {i}: {linha}")
+    #######################################
     return texto
 
 # Função para extrair os dados do texto do PDF
