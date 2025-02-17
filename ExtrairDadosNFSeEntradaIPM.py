@@ -13,13 +13,6 @@ def extrair_texto_pdf(caminho_pdf):
         leitor = PyPDF2.PdfReader(arquivo)
         for pagina in leitor.pages:
             texto += pagina.extract_text()
-    #######################################
-    # linhas = texto.splitlines()  # Divide o texto em linhas
-
-    # print("\n=== TEXTO EXTRAÍDO COM NUMERAÇÃO ===\n")
-    # for i, linha in enumerate(linhas, start=1):  # Enumera as linhas a partir de 1
-    #     print(f"Linha {i}: {linha}")
-    #######################################
     return texto
 
 # Função para extrair os dados do texto do PDF
@@ -106,7 +99,9 @@ def extrair_dados_nf(texto_pdf, especie, nome_arquivo):
     return dados
 
 # Função para salvar arquivos em CSV ou ODS
-def salvar_arquivo(dados, formato, root):
+def salvar_arquivo(dados, formato, root, janela_formato):
+    if janela_formato:
+        janela_formato.destroy()  # Fecha a janela de seleção de formato antes de abrir o diálogo de salvamento
     # Reorganiza as colunas conforme ordem exigida
     colunas_ordem = [
 	    "CNPJ",
@@ -130,20 +125,18 @@ def salvar_arquivo(dados, formato, root):
         "Arquivo com Erro",
         "CFOP",
     ]
-    df = pd.DataFrame(dados, columns=colunas_ordem)
+    df = pd.DataFrame(dados)
 
-    # Permite ao usuário escolher o nome e local do arquivo
     caminho_arquivo = filedialog.asksaveasfilename(
         title="Salvar arquivo como",
         defaultextension=f".{formato.lower()}",
         filetypes=[(f"Arquivo {formato.upper()}", f"*.{formato.lower()}")],
     )
 
-    if not caminho_arquivo:  # Se o usuário cancelar a escolha do nome do arquivo
+    if not caminho_arquivo:
         messagebox.showwarning("Aviso", "Nenhum arquivo foi salvo. Processo cancelado.")
         return
 
-    # Salva o arquivo no formato desejado
     try:
         if formato == "CSV":
             df.to_csv(caminho_arquivo, index=False, sep=";")
@@ -155,7 +148,7 @@ def salvar_arquivo(dados, formato, root):
     except Exception as e:
         messagebox.showerror("Erro", f"Ocorreu um erro ao salvar o arquivo:\n{str(e)}")
 
-    root.destroy()  # Fecha o programa
+    root.destroy()  
 
 # Função principal
 def processar_notas(especie, root):
@@ -178,7 +171,7 @@ def processar_notas(especie, root):
             dados_totais.append(dados_extraidos)
 
     # Tela para escolher o formato de salvamento
-    janela_formato = tk.Toplevel()
+    janela_formato = tk.Toplevel(root)
     janela_formato.title("Selecione o Formato")
     janela_formato.geometry("300x100")
 
@@ -189,14 +182,14 @@ def processar_notas(especie, root):
     btn_csv = ttk.Button(
         janela_formato,
         text="CSV",
-        command=lambda: salvar_arquivo(dados_totais, "CSV", root),
+        command=lambda: salvar_arquivo(dados_totais, "CSV", root, janela_formato),
     )
     btn_csv.pack(side=tk.LEFT, padx=20, pady=20)
 
     btn_ods = ttk.Button(
         janela_formato,
         text="ODS",
-        command=lambda: salvar_arquivo(dados_totais, "ODS", root),
+        command=lambda: salvar_arquivo(dados_totais, "ODS", root, janela_formato),
     )
     btn_ods.pack(side=tk.RIGHT, padx=20, pady=20)
 
