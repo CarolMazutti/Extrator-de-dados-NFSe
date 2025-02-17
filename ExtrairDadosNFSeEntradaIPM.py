@@ -132,20 +132,29 @@ def salvar_arquivo(dados, formato, root):
     ]
     df = pd.DataFrame(dados, columns=colunas_ordem)
 
-    # Seleção do local de salvamento
-    pasta_destino = filedialog.askdirectory(title="Selecione o local para salvar o arquivo")
-    if not pasta_destino:
-        messagebox.showwarning("Aviso", "Nenhuma pasta selecionada. Processo cancelado.")
+    # Permite ao usuário escolher o nome e local do arquivo
+    caminho_arquivo = filedialog.asksaveasfilename(
+        title="Salvar arquivo como",
+        defaultextension=f".{formato.lower()}",
+        filetypes=[(f"Arquivo {formato.upper()}", f"*.{formato.lower()}")],
+    )
+
+    if not caminho_arquivo:  # Se o usuário cancelar a escolha do nome do arquivo
+        messagebox.showwarning("Aviso", "Nenhum arquivo foi salvo. Processo cancelado.")
         return
 
     # Salva o arquivo no formato desejado
-    caminho_arquivo = os.path.join(pasta_destino, f"notas.{formato.lower()}")
-    if formato == 'CSV':
-        df.to_csv(caminho_arquivo, index=False, sep=';')
-    elif formato == 'ODS':
-        df.to_excel(caminho_arquivo, index=False, engine='odf')
+    try:
+        if formato == "CSV":
+            df.to_csv(caminho_arquivo, index=False, sep=";")
+        elif formato == "ODS":
+            df.to_excel(caminho_arquivo, index=False, engine="odf")
+        
+        messagebox.showinfo("Sucesso", f"Arquivo salvo com sucesso:\n{caminho_arquivo}")
 
-    messagebox.showinfo("Sucesso", f"Arquivo salvo em: {caminho_arquivo}")
+    except Exception as e:
+        messagebox.showerror("Erro", f"Ocorreu um erro ao salvar o arquivo:\n{str(e)}")
+
     root.destroy()  # Fecha o programa
 
 # Função principal
