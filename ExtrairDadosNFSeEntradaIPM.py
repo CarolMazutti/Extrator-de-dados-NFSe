@@ -34,30 +34,24 @@ def extrair_dados_nf(texto_pdf, especie, nome_arquivo):
     data_fato_gerador = "Não encontrado"
     data_emissao = "Não encontrado"
     
-    # Percorre as linhas para capturar os valores que estão na linha seguinte aos rótulos
+    # Percorre as linhas para encontrar a linha que contém "Data Fato Gerador"
     for i, linha in enumerate(linhas):
-        if "Data Fato Gerador" in linha and i + 1 < len(linhas):
-            datas_extracao = linhas[i + 1].strip().split()
-            
-            # Se encontrar duas datas
-            if len(datas_extracao) >= 2:
-                # A primeira data é a "Data Fato Gerador"
-                data_fato_gerador = datas_extracao[0]
+        if "Data Fato Gerador" in linha and "Data/Hora Emissão" in linha:
+            # A linha seguinte contém as datas
+            if i + 1 < len(linhas):
+                linha_datas = linhas[i + 1]
+                datas_extracao = re.findall(r"\d{2}/\d{2}/\d{4}", linha_datas)
                 
-                # A segunda data pode ter hora. Se tiver, removemos a hora e atribuimos à "Data Emissão"
-                data_emissao = datas_extracao[1].split()[0]  # Retira a hora, se existir
-                
-            # Se encontrar apenas uma data, define como "Não encontrado" para ambas as datas
-            elif len(datas_extracao) == 1:
-                data_fato_gerador = "Não encontrado"
-                data_emissao = "Não encontrado"
-            
-        elif "Data/Hora Emissão" in linha and i + 1 < len(linhas):
-            datas_extracao = linhas[i + 1].strip().split()
-            
-            # Se houver mais de uma data, atribui à "Data Emissão", removendo a hora, se necessário
-            if len(datas_extracao) > 1:
-                data_emissao = datas_extracao[1].split()[0]  # Remove a hora e pega a data
+                if len(datas_extracao) >= 2:
+                    data_fato_gerador = datas_extracao[0]
+                    data_emissao = datas_extracao[1]
+            break  # Para o loop ao encontrar a linha correta
+
+    # Garante que, se alguma das datas não for encontrada, mantenha "Não encontrado"
+    if not data_fato_gerador:
+        data_fato_gerador = "Não encontrado"
+    if not data_emissao:
+        data_emissao = "Não encontrado"
 
     cnpj_prestador_match = re.search(r"CNPJ:\s*([\d./-]+)", texto_pdf)
     cnpj_prestador = re.sub(r'\D', '', cnpj_prestador_match.group(1)) if cnpj_prestador_match else "Não encontrado"
